@@ -3,7 +3,12 @@ project(project)
 
 ## Find catkin and any catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  message_generation roscpp std_msgs message_filters)
+  message_generation roscpp std_msgs message_filters dynamic_reconfigure)
+
+generate_dynamic_reconfigure_options(
+  cfg/configs.cfg
+  
+)
   
 add_message_files(FILES
   floatStamped.msg
@@ -25,6 +30,7 @@ add_executable(odometry
   src/odometry.cpp
 )
 add_dependencies(odometry ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(odometry ${PROJECT_NAME}_gencfg)
 target_link_libraries(odometry
   ${catkin_LIBRARIES}
 )

@@ -10,11 +10,24 @@
 #include <message_filters/sync_policies/exact_time.h>
 #include <message_filters/sync_policies/approximate_time.h>
 
+#include <dynamic_reconfigure/server.h>
+#include <project/configsConfig.h>
+
 
 
 void callback(const project::floatStamped::ConstPtr& msg1, const project::floatStamped::ConstPtr& msg2)
 {
   ROS_INFO ("Received two messages: (%f) and (%f)", msg1->data, msg2->data);
+}
+
+void parameters(project::configsConfig &config, uint32_t level){
+  ROS_INFO("odometry set is %s starting from: [%d - %d]", 
+            config.diff_acker?"differntial":"ackerman", 
+            config.x,
+            config.y);
+            
+            ROS_INFO ("%d",level);
+
 }
 
 void chatterCallback(const std_msgs::Float64::ConstPtr& msg)
@@ -25,11 +38,17 @@ void chatterCallback(const std_msgs::Float64::ConstPtr& msg)
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "odometry");
+  dynamic_reconfigure::Server<project::configsConfig> server;
+  dynamic_reconfigure::Server<project::configsConfig>::CallbackType f;
+
+  f = boost::bind(&parameters, _1, _2);
+  server.setCallback(f);
 
   ros::NodeHandle n; 
 
   message_filters::Subscriber<project::floatStamped> sub1(n, "speedL_stamped", 1);
   message_filters::Subscriber<project::floatStamped> sub2(n, "speedR_stamped", 1);
+  //message_filters::Subscriber<project::floatStamped> sub3(n, "stear_stamped", 1);
 
   //ros::Subscriber sub = n.subscribe("speed_L", 1000, chatterCallback);
 
