@@ -15,9 +15,9 @@
 
 
 
-void callback(const project::floatStamped::ConstPtr& msg1, const project::floatStamped::ConstPtr& msg2)
+void callback(const project::floatStamped::ConstPtr& msg1, const project::floatStamped::ConstPtr& msg2,const project::floatStamped::ConstPtr&msg3)
 {
-  ROS_INFO ("Received two messages: (%f) and (%f)", msg1->data, msg2->data);
+  ROS_INFO ("left wheel velocity:(%f) and right wheel velocity:(%f),steering angle:(%f)", msg1->data, msg2->data,msg3->data);
 }
 
 void parameters(project::configsConfig &config, uint32_t level){
@@ -47,18 +47,20 @@ int main(int argc, char** argv)
   ros::NodeHandle n; 
 
   message_filters::Subscriber<project::floatStamped> sub1(n, "speedL_stamped", 1);
-  message_filters::Subscriber<project::floatStamped> sub2(n, "speedR_stamped", 1);
+  //message_filters::Subscriber<project::floatStamped> sub2(n, "speedR_stamped", 1);
+  message_filters::Subscriber<project::floatStamped> sub2(n, "speedR_stamped", 2);
+  message_filters::Subscriber<project::floatStamped>sub3(n,"/steer_stamped",3);
   //message_filters::Subscriber<project::floatStamped> sub3(n, "stear_stamped", 1);
 
   //ros::Subscriber sub = n.subscribe("speed_L", 1000, chatterCallback);
 
   //typedef message_filters::sync_policies::ExactTime<geometry_msgs::Vector3Stamped, geometry_msgs::Vector3Stamped> MySyncPolicy;
-  typedef message_filters::sync_policies::ApproximateTime<project::floatStamped, project::floatStamped> MySyncPolicy;
+  typedef message_filters::sync_policies::ApproximateTime<project::floatStamped, project::floatStamped,project::floatStamped> MySyncPolicy;
   
   
-  message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), sub1, sub2);
+  message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), sub1, sub2,sub3);
   //ROS_INFO ("Received two messages");
-  sync.registerCallback(boost::bind(&callback, _1, _2));
+  sync.registerCallback(boost::bind(&callback, _1, _2,_3));
 
 
   //message_filters::TimeSynchronizer<project::floatStamped, project::floatStamped> sync(sub1, sub2, 1000);
