@@ -24,6 +24,7 @@ double previous_time=0;
 float prev_x=0;
 float prev_y=0;
 
+
 using namespace message_filters;
 using namespace std;
 
@@ -71,18 +72,17 @@ double update_time(double *previous_time, double*current_Time){
 
 void parameters(project::configsConfig &config, uint32_t level){
   ROS_INFO("odometry set is %s starting from: [%d - %d]", 
-            config.diff_acker?"differntial":"ackerman", 
+            config.diff_acker ? "differntial":"ackerman", 
             config.x,
             config.y);
+
+            prev_x = config.x;
+            prev_y = config.y
             
             ROS_INFO ("%d",level);
 
 }
 
-void chatterCallback(const std_msgs::Float64::ConstPtr& msg)
-{
-  ROS_INFO("Speed LEFT: [%f]", msg->data);
-}
 
 void callback(const project::floatStamped::ConstPtr& msg1, const project::floatStamped::ConstPtr& msg2,const project::floatStamped::ConstPtr &msg3)
 {
@@ -107,10 +107,8 @@ int main(int argc, char** argv)
   ros::NodeHandle n;
 
   message_filters::Subscriber<project::floatStamped> sub1(n, "speedR_stamped", 1);
-  //message_filters::Subscriber<project::floatStamped> sub2(n, "speedR_stamped", 1);
   message_filters::Subscriber<project::floatStamped> sub2(n, "speedL_stamped", 2);
   message_filters::Subscriber<project::floatStamped> sub3(n,"steer_stamped",3);
-  //message_filters::Subscriber<project::floatStamped> sub3(n, "stear_stamped", 1);
 
   //ros::Subscriber sub = n.subscribe("speed_L", 1000, chatterCallback);
 
