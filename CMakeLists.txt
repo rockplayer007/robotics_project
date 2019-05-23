@@ -3,7 +3,7 @@ project(project)
 
 ## Find catkin and any catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  message_generation roscpp std_msgs message_filters dynamic_reconfigure)
+  message_generation roscpp std_msgs message_filters dynamic_reconfigure tf)
 
 generate_dynamic_reconfigure_options(
   cfg/configs.cfg
