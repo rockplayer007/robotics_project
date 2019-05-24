@@ -10,6 +10,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <project/configsConfig.h>
 #include<iostream>
+#include <cmath> 
 #include <malloc.h>
 
 #include <tf/transform_broadcaster.h>
@@ -44,6 +45,7 @@ public:
        float  prev_x;
        float  prev_y;
        bool choice;
+
        Odometer(){
                prev_angSpeed=0; 
                n_iterations=0;
@@ -58,10 +60,22 @@ public:
                sub3.subscribe(this->n,"steer_stamped",1);
                
        }
+
+       float filterDegAngle(float degAngle){
+        if(degAngle>360)
+           degAngle= degAngle-360;
+        return degAngle;
+      }
+
+      float filterRadAngle(float radAngle){
+        if(radAngle>2*M_PI)
+          radAngle=radAngle-(2*M_PI);
+        return radAngle;
+      }
       
        float radiantToDegree(float radiantAngle){
          float result;
-         result = ((radiantAngle*180)/3.14);
+         result = ((radiantAngle*180)/M_PI);
          return result;
        }
 
@@ -118,6 +132,7 @@ public:
                     /*cout<<"start_angle:"<<*start_angle;*/
                     //cout<<" update_angle:"<<Odometer::updated_angle<<"\n";
                     Odometer::updated_angle = Odometer::start_angle +Odometer::prev_angSpeed*interval;
+                    Odometer::updated_angle=filterRadAngle(Odometer::updated_angle);
                     //cout<<"updated angle:"<<updated_angle;
                     /*cout<<"updated angle:"<<*updated_angle;
                     cout<<"start_angle"<<*start_angle<<"\n";*/
@@ -134,7 +149,7 @@ public:
        }
        
        float degToRad(float degAngle){
-         float result = (degAngle*3,14)/180;
+         float result = (degAngle*M_PI)/180;
          return result;
        }
 
@@ -191,6 +206,8 @@ public:
 
                               ROS_INFO ("%d",level);
                               }
+
+      
       void callback(const project::floatStamped::ConstPtr& msg1, const project::floatStamped::ConstPtr& msg2,const project::floatStamped::ConstPtr &msg3,Odometer*od)
         {
           float speed_right = msg1->data;
