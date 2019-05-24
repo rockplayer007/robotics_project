@@ -12,6 +12,9 @@
 #include<iostream>
 #include <malloc.h>
 
+#include <tf/transform_broadcaster.h>
+#include <nav_msgs/Odometry.h>
+
 #define Baseline 1.3  /*m*/
 #define front_rear_dist 1.765 /*m*/
 #define steering_factore 18
@@ -24,6 +27,10 @@ class Odometer{
        
 public:
        ros::NodeHandle n;
+       //fro publishing 
+       ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("odom", 50);
+       tf::TransformBroadcaster odom_broadcaster;
+
        message_filters::Subscriber<project::floatStamped> sub1;
        message_filters::Subscriber<project::floatStamped> sub2;
        message_filters::Subscriber<project::floatStamped> sub3;
@@ -49,6 +56,7 @@ public:
                sub1.subscribe(this->n,"speedR_stamped",1);
                sub2.subscribe(this->n,"speedL_stamped",1);
                sub3.subscribe(this->n,"steer_stamped",1);
+               
        }
       
        float radiantToDegree(float radiantAngle){
@@ -64,6 +72,45 @@ public:
             cout<<"  angle: "<<radiantToDegree(angle) <<"\n";
             /*float time = current_Time - previous_time;
             cout<<"time:"<<time;*/
+            
+            //th is the angle
+            //double th = 0.0;
+            geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(angle);
+
+            geometry_msgs::TransformStamped odom_trans;
+            odom_trans.header.stamp = ros::Time::now(); //change
+            odom_trans.header.frame_id = "odom";
+            odom_trans.child_frame_id = "base_link";
+            
+            odom_trans.transform.translation.x = x; // setting x and y
+            odom_trans.transform.translation.y = y; 
+            odom_trans.transform.translation.z = 0.0; //needs to be 0.0
+            odom_trans.transform.rotation = odom_quat;
+
+
+            odom_broadcaster.sendTransform(odom_trans);
+            
+            //next, we'll publish the odometry message over ROS
+            nav_msgs::Odometry odom;
+            odom.header.stamp = ros::Time::now(); //change
+            odom.header.frame_id = "odom";
+
+            //set the position
+            odom.pose.pose.position.x = x; //setting x and y
+            odom.pose.pose.position.y = y; 
+            odom.pose.pose.position.z = 0.0; //needs to be 0.0
+            odom.pose.pose.orientation = odom_quat;
+
+            //set the velocity
+            odom.child_frame_id = "base_link";
+            odom.twist.twist.linear.x = 0.0; //decide if to change
+            odom.twist.twist.linear.y = 0.0;//decide if to change
+            odom.twist.twist.angular.z = 0.0;//decide if to change
+
+            //publish the message
+            
+            Odometer::odom_pub.publish(odom);
+
        }
 
        void do_diff_drive_odometry(float speed,float angular_speed,int numb,float start_angle,float updated_angle,float interval){
@@ -173,4 +220,5 @@ public:
             sync.registerCallback(boost::bind(&(callback), _1, _2,_3,odometerObj));
             ROS_INFO ("Received two messages");*/
             return 0;
+
           }    
