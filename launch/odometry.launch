@@ -1,0 +1,8 @@
+<launch>
+
+<node pkg="project" type = "odometry" name = "odometry"/>
+<!--
+<node pkg="tf" type="static_transform_publisher" name="back_right" args="0.3 -0.3 0 0 0 0 1 base_link FRleg 100" />
+<node pkg="tf" type="static_transform_publisher" name="front_right" args="0.3 0.3 0 0 0 0 1 base_link FLleg 100" />
+-->
+</launch>
