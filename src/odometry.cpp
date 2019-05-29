@@ -2,6 +2,7 @@
 #include "std_msgs/Float64.h"
 #include "project/floatStamped.h"
 #include "geometry_msgs/Vector3Stamped.h"
+#include "project/custom_msg.h"
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/exact_time.h>
@@ -28,8 +29,12 @@ class Odometer{
        
 public:
        ros::NodeHandle n;
-       //fro publishing 
-       ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("odom", 50);
+       //for publishing 
+       ros::Publisher odom_std = n.advertise<nav_msgs::Odometry>("odom_std", 50);
+       ros::Publisher odom_custom = n.advertise<project::custom_msg>("odom_custom", 50);
+       project::custom_msg myMessage;
+
+
        tf::TransformBroadcaster odom_broadcaster;
 
        message_filters::Subscriber<project::floatStamped> sub1;
@@ -83,18 +88,18 @@ public:
            /*c'è da pubblicare il topic a riguardo. Per ora stampo solo le cose*/
             cout<<"x: "<<x;
             cout<<"  y: "<<y;
-            cout<<"  angle: "<<radiantToDegree(angle) <<"\n";
+            cout<<"  angle degree: "<<radiantToDegree(angle);
+            cout<<"  angle radiants: "<<angle<< "\n";
             /*float time = current_Time - previous_time;
             cout<<"time:"<<time;*/
+           
             
-            //th is the angle
-            //double th = 0.0;
             geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(angle);
 
             geometry_msgs::TransformStamped odom_trans;
             odom_trans.header.stamp = ros::Time::now(); //change
-            odom_trans.header.frame_id = "odom";
-            odom_trans.child_frame_id = "base_link";
+            odom_trans.header.frame_id = "car_odometry";
+            odom_trans.child_frame_id = "car";
             
             odom_trans.transform.translation.x = x; // setting x and y
             odom_trans.transform.translation.y = y; 
@@ -102,12 +107,12 @@ public:
             odom_trans.transform.rotation = odom_quat;
 
 
-            odom_broadcaster.sendTransform(odom_trans);
+            Odometer::odom_broadcaster.sendTransform(odom_trans);
             
             //next, we'll publish the odometry message over ROS
             nav_msgs::Odometry odom;
             odom.header.stamp = ros::Time::now(); //change
-            odom.header.frame_id = "odom";
+            odom.header.frame_id = "car_odometry";
 
             //set the position
             odom.pose.pose.position.x = x; //setting x and y
@@ -116,14 +121,23 @@ public:
             odom.pose.pose.orientation = odom_quat;
 
             //set the velocity
-            odom.child_frame_id = "base_link";
-            odom.twist.twist.linear.x = 0.0; //decide if to change
-            odom.twist.twist.linear.y = 0.0;//decide if to change
+            
+            odom.child_frame_id = "car";
+            odom.twist.twist.linear.x = 0; //decide if to change
+            odom.twist.twist.linear.y = 0;//decide if to change
             odom.twist.twist.angular.z = 0.0;//decide if to change
+            
 
             //publish the message
-            
-            Odometer::odom_pub.publish(odom);
+            Odometer::odom_std.publish(odom);
+
+
+            myMessage.x = x;
+            myMessage.y = y;
+            myMessage.theta = radiantToDegree(angle) ;
+
+            Odometer::odom_custom.publish(myMessage);
+
 
        }
 
@@ -211,8 +225,12 @@ public:
       void callback(const project::floatStamped::ConstPtr& msg1, const project::floatStamped::ConstPtr& msg2,const project::floatStamped::ConstPtr &msg3,Odometer*od)
         {
           float speed_right = msg1->data;
+          
           float speed_left = msg2->data;
+
           float steer = msg3->data;
+
+          cout<<"tempo: "<<msg1->header.stamp;
           //cout<<"speed_right:"<<speed_right;
           //cout<<"speed_left:"<<speed_left<<"\n";
           if(od->choice)

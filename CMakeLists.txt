@@ -11,6 +11,7 @@ generate_dynamic_reconfigure_options(
 )
   
 add_message_files(FILES
+  custom_msg.msg
   floatStamped.msg
 )
 
