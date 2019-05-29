@@ -20,7 +20,6 @@
 #define front_rear_dist 1.765 /*m*/
 #define steering_factore 18
 
-
 using namespace message_filters;
 using namespace std;
 
@@ -36,12 +35,12 @@ public:
        message_filters::Subscriber<project::floatStamped> sub2;
        message_filters::Subscriber<project::floatStamped> sub3;
        ros::Timer timer1;
-       float prev_angSpeed=0; 
-       int n_iterations=0;
-       float start_angle=0;
-       float updated_angle=0;
-       double current_Time=0;
-       double previous_time=0;
+       float prev_angSpeed;
+       int n_iterations;
+       float start_angle;
+       float updated_angle;
+       double current_Time;
+       double previous_time;
        float  prev_x;
        float  prev_y;
        bool choice;
@@ -53,13 +52,10 @@ public:
                updated_angle=0;
                current_Time=0;
                previous_time=0;
-               prev_x;
-               prev_y;
                sub1.subscribe(this->n,"speedR_stamped",1);
                sub2.subscribe(this->n,"speedL_stamped",1);
                sub3.subscribe(this->n,"steer_stamped",1);
-               
-       }
+               }
 
        float filterDegAngle(float degAngle){
         if(degAngle>360)
