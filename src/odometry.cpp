@@ -184,7 +184,7 @@ public:
         void set(void (*f)  (const project::floatStamped::ConstPtr&, const project::floatStamped::ConstPtr&, const project::floatStamped::ConstPtr&, Odometer*)) {
           typedef message_filters::sync_policies::ApproximateTime<project::floatStamped, project::floatStamped,project::floatStamped> MySyncPolicy;
           message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), sub1, sub2,sub3);
-          ROS_INFO ("Received two messages");
+          //ROS_INFO ("Received two messages");
           sync.registerCallback(boost::bind(f, _1, _2,_3,this));
           ros::spin();
         }
